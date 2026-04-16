@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    margin: 0;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background-color: #f8f7f4;
+    color: #1c1917;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #root {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Georgia', 'Times New Roman', serif;
+  }
+
+  input, select, textarea, button {
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+}
