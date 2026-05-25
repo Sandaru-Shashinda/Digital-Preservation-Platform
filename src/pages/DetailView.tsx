@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   ArrowLeft, MapPin, Clock, ScrollText, FileText,
-  Languages, Loader2, AlertCircle, Calendar
+  Languages, Loader2, AlertCircle, Calendar, Volume2, VolumeX, Image
 } from 'lucide-react';
 import { fetchInscriptionById } from '../services/api';
 import type { Inscription } from '../services/api';
 import { formatLocation, formatDate } from '../utils/formatters';
+import { useTTS, type TTSLang } from '../hooks/useTTS';
 
 const PLACEHOLDER_IMG = 'https://placehold.co/800x500/e7e5e4/78716c?text=No+Image+Available';
 
@@ -15,6 +16,9 @@ export default function DetailView() {
   const [inscription, setInscription] = useState<Inscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showProcessed, setShowProcessed] = useState(false);
+  const [ttsLang, setTtsLang] = useState<TTSLang>('en-US');
+  const { speak, stop, speaking, supported: ttsSupported } = useTTS();
 
   useEffect(() => {
     if (!id) return;
@@ -54,10 +58,18 @@ export default function DetailView() {
   }
 
   const {
-    title, description, imageUrl, location, historicalPeriod,
+    title, description, imageUrl, imageProcessedUrl, location, historicalPeriod,
     scriptType, contentRaw, contentTranslated, createdAt
   } = inscription;
   const locationStr = formatLocation(location);
+  const hasProcessed = !!imageProcessedUrl;
+  const displayImage = showProcessed && hasProcessed ? imageProcessedUrl : imageUrl;
+
+  const handleListen = () => {
+    if (speaking) { stop(); return; }
+    if (!contentTranslated) return;
+    speak(contentTranslated, ttsLang);
+  };
 
   return (
     <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
@@ -73,16 +85,28 @@ export default function DetailView() {
         {/* Hero Image */}
         <div className="relative h-64 sm:h-80 bg-stone-100">
           <img
-            src={imageUrl || PLACEHOLDER_IMG}
+            src={displayImage || PLACEHOLDER_IMG}
             alt={title}
             className="w-full h-full object-cover"
             onError={(e) => { (e.target as HTMLImageElement).src = PLACEHOLDER_IMG; }}
           />
-          {scriptType && (
-            <span className="absolute top-4 right-4 bg-amber-700/90 text-amber-50 text-sm font-medium px-3 py-1 rounded-full">
-              {scriptType}
-            </span>
-          )}
+          <div className="absolute top-4 right-4 flex items-center gap-2">
+            {hasProcessed && (
+              <button
+                onClick={() => setShowProcessed((v) => !v)}
+                title={showProcessed ? 'Show original image' : 'Show processed image'}
+                className="flex items-center gap-1.5 bg-black/60 text-white text-xs px-3 py-1.5 rounded-full hover:bg-black/80 transition-colors"
+              >
+                <Image className="w-3.5 h-3.5" />
+                {showProcessed ? 'Original' : 'Processed'}
+              </button>
+            )}
+            {scriptType && (
+              <span className="bg-amber-700/90 text-amber-50 text-sm font-medium px-3 py-1 rounded-full">
+                {scriptType}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="p-6 sm:p-8">
@@ -138,12 +162,39 @@ export default function DetailView() {
             </Section>
           )}
 
-          {/* Translation */}
+          {/* Translation + TTS */}
           {contentTranslated && (
             <Section icon={<Languages className="w-5 h-5 text-amber-700" />} title="Translation">
-              <p className="text-stone-700 leading-relaxed bg-amber-50/60 border border-amber-100 rounded-lg p-4">
+              <p className="text-stone-700 leading-relaxed bg-amber-50/60 border border-amber-100 rounded-lg p-4 whitespace-pre-line">
                 {contentTranslated}
               </p>
+
+              {ttsSupported && (
+                <div className="flex items-center gap-3 mt-3">
+                  <select
+                    value={ttsLang}
+                    onChange={(e) => setTtsLang(e.target.value as TTSLang)}
+                    disabled={speaking}
+                    className="text-xs border border-stone-300 rounded px-2 py-1.5 text-stone-600 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 bg-white disabled:opacity-50"
+                  >
+                    <option value="en-US">English</option>
+                    <option value="si-LK">සිංහල (Sinhala)</option>
+                  </select>
+                  <button
+                    onClick={handleListen}
+                    className={`flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-full font-medium transition-colors ${
+                      speaking
+                        ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                        : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                    }`}
+                  >
+                    {speaking
+                      ? <><VolumeX className="w-4 h-4" /> Stop</>
+                      : <><Volume2 className="w-4 h-4" /> Listen</>
+                    }
+                  </button>
+                </div>
+              )}
             </Section>
           )}
         </div>

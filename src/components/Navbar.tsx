@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ScrollText, LayoutDashboard, Library, LogOut, LogIn } from 'lucide-react';
+import { ScrollText, LayoutDashboard, Library, LogOut, LogIn, Map } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
@@ -34,6 +34,10 @@ export default function Navbar() {
             <Link to="/" className={linkClass('/')}>
               <Library className="w-4 h-4" />
               <span>Archive</span>
+            </Link>
+            <Link to="/map" className={linkClass('/map')}>
+              <Map className="w-4 h-4" />
+              <span>Map</span>
             </Link>
 
             {isAuthenticated ? (

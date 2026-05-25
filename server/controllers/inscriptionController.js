@@ -1,4 +1,13 @@
+import path from 'path';
+import fs from 'fs/promises';
+import { fileURLToPath } from 'url';
 import Inscription from '../models/Inscription.js';
+import { processImage } from '../utils/imageProcessor.js';
+import { runOcr } from '../utils/ocrEngine.js';
+import { translateText } from '../utils/translator.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
 
 export const getInscriptions = async (req, res, next) => {
   try {
@@ -50,6 +59,15 @@ export const deleteInscription = async (req, res, next) => {
   try {
     const inscription = await Inscription.findByIdAndDelete(req.params.id);
     if (!inscription) { const e = new Error('Inscription not found'); e.statusCode = 404; return next(e); }
+
+    // Clean up uploaded files if they exist
+    for (const urlField of [inscription.imageUrl, inscription.imageProcessedUrl]) {
+      if (urlField?.startsWith('/uploads/')) {
+        const filePath = path.join(UPLOADS_DIR, '..', urlField);
+        await fs.unlink(filePath).catch(() => {});
+      }
+    }
+
     res.json({ message: 'Inscription deleted successfully', id: req.params.id });
   } catch (err) { next(err); }
 };
@@ -66,5 +84,81 @@ export const getFilterOptions = async (req, res, next) => {
       periods: periods.filter(Boolean).sort(),
       scripts: scripts.filter(Boolean).sort(),
     });
+  } catch (err) { next(err); }
+};
+
+export const uploadImage = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      const e = new Error('No file uploaded'); e.statusCode = 400; return next(e);
+    }
+
+    const inscription = await Inscription.findById(req.params.id);
+    if (!inscription) { const e = new Error('Inscription not found'); e.statusCode = 404; return next(e); }
+
+    // Remove old uploaded files
+    for (const urlField of [inscription.imageUrl, inscription.imageProcessedUrl]) {
+      if (urlField?.startsWith('/uploads/')) {
+        const filePath = path.join(UPLOADS_DIR, '..', urlField);
+        await fs.unlink(filePath).catch(() => {});
+      }
+    }
+
+    const originalUrl = `/uploads/originals/${req.file.filename}`;
+    const processedFilename = `processed_${req.file.filename.replace(/\.[^.]+$/, '.png')}`;
+    const processedPath = path.join(UPLOADS_DIR, 'processed', processedFilename);
+    const processedUrl = `/uploads/processed/${processedFilename}`;
+
+    // Run preprocessing pipeline
+    await processImage(req.file.path, processedPath);
+
+    inscription.imageUrl = originalUrl;
+    inscription.imageProcessedUrl = processedUrl;
+    await inscription.save();
+
+    res.json({
+      imageUrl: originalUrl,
+      imageProcessedUrl: processedUrl,
+      message: 'Image uploaded and processed successfully',
+    });
+  } catch (err) { next(err); }
+};
+
+export const ocrInscription = async (req, res, next) => {
+  try {
+    const inscription = await Inscription.findById(req.params.id);
+    if (!inscription) { const e = new Error('Inscription not found'); e.statusCode = 404; return next(e); }
+
+    // Prefer processed image for better OCR accuracy
+    const imageUrl = inscription.imageProcessedUrl || inscription.imageUrl;
+    if (!imageUrl) {
+      const e = new Error('No image available for OCR. Upload an image first.'); e.statusCode = 400; return next(e);
+    }
+
+    let imagePath;
+    if (imageUrl.startsWith('/uploads/')) {
+      imagePath = path.join(UPLOADS_DIR, '..', imageUrl);
+    } else {
+      // External URL — pass directly to tesseract
+      imagePath = imageUrl;
+    }
+
+    const { text, confidence } = await runOcr(imagePath);
+    res.json({ text, confidence });
+  } catch (err) { next(err); }
+};
+
+export const translateInscription = async (req, res, next) => {
+  try {
+    const inscription = await Inscription.findById(req.params.id);
+    if (!inscription) { const e = new Error('Inscription not found'); e.statusCode = 404; return next(e); }
+
+    const text = req.body.text || inscription.contentRaw;
+    if (!text?.trim()) {
+      const e = new Error('No text to translate. Add a transcription first.'); e.statusCode = 400; return next(e);
+    }
+
+    const translation = await translateText(text, inscription.scriptType);
+    res.json({ translation });
   } catch (err) { next(err); }
 };

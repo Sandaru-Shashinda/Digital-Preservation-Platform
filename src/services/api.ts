@@ -24,6 +24,7 @@ export interface Inscription {
   title: string;
   description: string;
   imageUrl: string;
+  imageProcessedUrl: string;
   location: InscriptionLocation;
   historicalPeriod: string;
   scriptType: string;
@@ -33,7 +34,7 @@ export interface Inscription {
   updatedAt: string;
 }
 
-export type InscriptionFormData = Omit<Inscription, '_id' | 'createdAt' | 'updatedAt'>;
+export type InscriptionFormData = Omit<Inscription, '_id' | 'createdAt' | 'updatedAt' | 'imageProcessedUrl'>;
 
 export interface FilterParams {
   search?: string;
@@ -58,6 +59,17 @@ export interface FilterOptions {
   locations: string[];
   periods: string[];
   scripts: string[];
+}
+
+export interface OcrResult {
+  text: string;
+  confidence: number;
+}
+
+export interface UploadResult {
+  imageUrl: string;
+  imageProcessedUrl: string;
+  message: string;
 }
 
 // ---- API Calls ----
@@ -88,6 +100,25 @@ export const deleteInscription = async (id: string): Promise<{ message: string; 
 
 export const fetchFilterOptions = async (): Promise<FilterOptions> => {
   const { data } = await api.get<FilterOptions>('/inscriptions/filters');
+  return data;
+};
+
+export const uploadInscriptionImage = async (id: string, file: File): Promise<UploadResult> => {
+  const formData = new FormData();
+  formData.append('image', file);
+  const { data } = await api.post<UploadResult>(`/inscriptions/${id}/upload-image`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+};
+
+export const runOcr = async (id: string): Promise<OcrResult> => {
+  const { data } = await api.post<OcrResult>(`/inscriptions/${id}/ocr`);
+  return data;
+};
+
+export const translateInscription = async (id: string, text?: string): Promise<{ translation: string }> => {
+  const { data } = await api.post<{ translation: string }>(`/inscriptions/${id}/translate`, text ? { text } : {});
   return data;
 };
 

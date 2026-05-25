@@ -10,6 +10,7 @@ const inscriptionSchema = new mongoose.Schema(
     },
     description: { type: String, trim: true, default: '' },
     imageUrl: { type: String, trim: true, default: '' },
+    imageProcessedUrl: { type: String, trim: true, default: '' },
     location: {
       name: { type: String, trim: true, default: '' },
       district: { type: String, trim: true, default: '' },

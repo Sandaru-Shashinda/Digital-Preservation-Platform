@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import ArchiveView from './pages/ArchiveView';
 import DetailView from './pages/DetailView';
+import MapView from './pages/MapView';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminLogin from './pages/AdminLogin';
 import AdminRegister from './pages/AdminRegister';
@@ -17,6 +18,7 @@ function App() {
           <Routes>
             <Route path="/" element={<ArchiveView />} />
             <Route path="/inscription/:id" element={<DetailView />} />
+            <Route path="/map" element={<MapView />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/register" element={<AdminRegister />} />
             <Route
