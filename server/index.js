@@ -49,13 +49,22 @@ app.get("/api/health", (req, res) => {
 
 app.use(errorHandler)
 
-mongoose
-  .connect(MONGO_URI)
-  .then(() => {
-    console.log(`MongoDB connected: ${MONGO_URI}`)
+// Retry with exponential backoff instead of exiting. A nonzero exit makes nodemon
+// treat a transient network blip as a terminal crash and stop until a file changes.
+const MAX_RETRY_DELAY = 30000
+
+const connectWithRetry = async (attempt = 1) => {
+  try {
+    await mongoose.connect(MONGO_URI)
+    const { host, name } = mongoose.connection
+    console.log(`MongoDB connected: ${host}/${name}`)
     app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`))
-  })
-  .catch((err) => {
-    console.error("MongoDB connection error:", err.message)
-    process.exit(1)
-  })
+  } catch (err) {
+    const delay = Math.min(MAX_RETRY_DELAY, 2000 * 2 ** (attempt - 1))
+    console.error(`MongoDB connection error (attempt ${attempt}): ${err.message}`)
+    console.error(`Retrying in ${delay / 1000}s...`)
+    setTimeout(() => connectWithRetry(attempt + 1), delay)
+  }
+}
+
+connectWithRetry()

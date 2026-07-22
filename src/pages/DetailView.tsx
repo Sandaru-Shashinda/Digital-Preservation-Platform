@@ -49,7 +49,7 @@ export default function DetailView() {
         <div className="flex flex-col items-center text-red-600">
           <AlertCircle className="w-8 h-8 mb-3" />
           <span className="text-sm font-medium">{error || 'Inscription not found'}</span>
-          <Link to="/" className="mt-3 text-xs text-stone-500 underline hover:no-underline">
+          <Link to="/inscriptions" className="mt-3 text-xs text-stone-500 underline hover:no-underline">
             Back to archive
           </Link>
         </div>
@@ -74,7 +74,7 @@ export default function DetailView() {
   return (
     <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
       <Link
-        to="/"
+        to="/inscriptions"
         className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-800 transition-colors mb-6"
       >
         <ArrowLeft className="w-4 h-4" />

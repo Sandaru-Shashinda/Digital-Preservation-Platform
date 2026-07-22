@@ -1,18 +1,21 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ScrollText, LayoutDashboard, Library, LogOut, LogIn, Map } from 'lucide-react';
+import { Mail, Phone, Bell, UserCircle, LogOut, ScrollText } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+
+const NAV_LINKS = [
+  { label: 'Home', to: '/' },
+  { label: 'Introduction to Inscription', to: '/#about' },
+  { label: 'Find Inscriptions', to: '/inscriptions' },
+  { label: 'Translate', to: '/inscriptions' },
+  { label: 'About Us', to: '#' },
+  { label: 'Our Services', to: '#' },
+  { label: 'Contact Us', to: '/#contact' },
+];
 
 export default function Navbar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, username, logout } = useAuth();
-
-  const linkClass = (path: string) =>
-    `flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-      pathname === path
-        ? 'bg-amber-100 text-amber-800'
-        : 'text-stone-300 hover:text-white hover:bg-stone-700'
-    }`;
 
   const handleLogout = () => {
     logout();
@@ -20,51 +23,82 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-stone-900 border-b border-stone-700 shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14">
-          <Link to="/" className="flex items-center gap-2.5 text-white hover:text-amber-300 transition-colors">
-            <ScrollText className="w-5 h-5 text-amber-400" />
-            <span className="font-semibold tracking-wide text-sm">
-              Sri Lankan Inscriptions
-            </span>
+    <header className="sticky top-0 z-50 font-poppins">
+      {/* Top info bar */}
+      <div className="bg-maroon text-white text-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-10 flex items-center justify-between">
+          <div className="hidden sm:flex items-center gap-2 font-sinhala">
+            <button className="opacity-80 hover:opacity-100 transition-opacity">සිංහල</button>
+            <span className="opacity-50">/</span>
+            <button className="font-bold">English</button>
+          </div>
+          <div className="flex items-center gap-4 ml-auto">
+            <a href="mailto:admin@sellipi.lk" className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
+              <Mail className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">admin@sellipi.lk</span>
+            </a>
+            <a href="tel:+94112786200" className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
+              <Phone className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">+94 11 2786200</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Main nav */}
+      <div className="bg-white border-t-[3px] border-maroon shadow-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+          <Link to="/" className="flex items-center gap-2 text-maroon shrink-0">
+            <ScrollText className="w-6 h-6" />
+            <span className="font-display text-lg tracking-wide">Inscription Sri Lanka</span>
           </Link>
 
-          <nav className="flex items-center gap-1">
-            <Link to="/" className={linkClass('/')}>
-              <Library className="w-4 h-4" />
-              <span>Archive</span>
-            </Link>
-            <Link to="/map" className={linkClass('/map')}>
-              <Map className="w-4 h-4" />
-              <span>Map</span>
-            </Link>
+          <nav className="hidden lg:flex items-center gap-5 overflow-x-auto">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.label}
+                to={link.to}
+                className={`text-sm whitespace-nowrap transition-colors ${
+                  pathname === link.to
+                    ? 'text-maroon font-bold'
+                    : 'text-stone-700 hover:text-maroon font-medium'
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              type="button"
+              title="Notifications"
+              className="text-stone-500 hover:text-maroon transition-colors"
+            >
+              <Bell className="w-5 h-5" />
+            </button>
 
             {isAuthenticated ? (
-              <>
-                <Link to="/admin" className={linkClass('/admin')}>
-                  <LayoutDashboard className="w-4 h-4" />
-                  <span>Admin</span>
+              <div className="flex items-center gap-2">
+                <Link to="/admin" className="flex items-center gap-1.5 text-stone-700 hover:text-maroon transition-colors">
+                  <UserCircle className="w-6 h-6" />
+                  <span className="hidden sm:inline text-sm font-medium">Hi, {username}</span>
                 </Link>
-                <div className="flex items-center gap-2 ml-2 pl-2 border-l border-stone-700">
-                  <span className="text-stone-400 text-xs hidden sm:block">{username}</span>
-                  <button
-                    onClick={handleLogout}
-                    title="Sign out"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-medium text-stone-300 hover:text-white hover:bg-stone-700 transition-colors"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span className="hidden sm:inline">Sign out</span>
-                  </button>
-                </div>
-              </>
+                <button
+                  onClick={handleLogout}
+                  title="Sign out"
+                  className="text-stone-400 hover:text-maroon transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
             ) : (
-              <Link to="/admin/login" className={linkClass('/admin/login')}>
-                <LogIn className="w-4 h-4" />
-                <span>Admin</span>
+              <Link to="/admin/login" className="flex items-center gap-1.5 text-stone-700 hover:text-maroon transition-colors">
+                <UserCircle className="w-6 h-6" />
+                <span className="hidden sm:inline text-sm font-medium">Sign In</span>
               </Link>
             )}
-          </nav>
+          </div>
         </div>
       </div>
     </header>

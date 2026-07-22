@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
+import LandingPage from './pages/LandingPage';
 import ArchiveView from './pages/ArchiveView';
 import DetailView from './pages/DetailView';
 import MapView from './pages/MapView';
@@ -16,7 +18,8 @@ function App() {
         <div className="flex flex-col min-h-screen bg-[#f8f7f4]">
           <Navbar />
           <Routes>
-            <Route path="/" element={<ArchiveView />} />
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/inscriptions" element={<ArchiveView />} />
             <Route path="/inscription/:id" element={<DetailView />} />
             <Route path="/map" element={<MapView />} />
             <Route path="/admin/login" element={<AdminLogin />} />
@@ -30,9 +33,7 @@ function App() {
               }
             />
           </Routes>
-          <footer className="mt-auto border-t border-stone-200 bg-stone-900 text-stone-400 text-xs text-center py-4">
-            Sri Lankan Inscription Archive — Digital Preservation Platform
-          </footer>
+          <Footer />
         </div>
       </BrowserRouter>
     </AuthProvider>
