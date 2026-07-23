@@ -6,10 +6,7 @@ const NAV_LINKS = [
   { label: 'Home', to: '/' },
   { label: 'Introduction to Inscription', to: '/#about' },
   { label: 'Find Inscriptions', to: '/inscriptions' },
-  { label: 'Translate', to: '/inscriptions' },
-  { label: 'About Us', to: '#' },
-  { label: 'Our Services', to: '#' },
-  { label: 'Contact Us', to: '/#contact' },
+  { label: 'Translate', to: '/translate' },
 ];
 
 export default function Navbar() {

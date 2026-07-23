@@ -125,12 +125,12 @@ export default function LandingPage() {
           alt="Map of archaeology sites in Sri Lanka"
           className="mx-auto max-w-sm w-full rounded-[40px] shadow-lg mb-10"
         />
-        <Link
+        {/* <Link
           to="/map"
           className="inline-block bg-maroon text-white font-bold px-6 py-3 rounded-[10px] shadow-md hover:bg-maroon-dark transition-colors"
         >
           View on Map &gt;&gt;
-        </Link>
+        </Link> */}
       </section>
 
       {/* Quick Links */}

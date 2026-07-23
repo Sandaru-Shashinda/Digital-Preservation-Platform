@@ -4,10 +4,12 @@ import cors from "cors"
 import helmet from "helmet"
 import rateLimit from "express-rate-limit"
 import mongoose from "mongoose"
+import fs from "fs"
 import path from "path"
 import { fileURLToPath } from "url"
 import inscriptionRoutes from "./routes/inscriptionRoutes.js"
 import authRoutes from "./routes/authRoutes.js"
+import toolRoutes from "./routes/toolRoutes.js"
 import { errorHandler } from "./middleware/errorHandler.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -18,6 +20,12 @@ const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/inscriptio
 if (!process.env.JWT_SECRET) {
   console.error("FATAL: JWT_SECRET is not set in environment variables")
   process.exit(1)
+}
+
+// Ensure upload directories exist so image processing / OCR don't fail with ENOENT
+const UPLOADS_DIR = path.join(__dirname, "uploads")
+for (const sub of ["originals", "processed"]) {
+  fs.mkdirSync(path.join(UPLOADS_DIR, sub), { recursive: true })
 }
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }))
@@ -42,6 +50,7 @@ const authLimiter = rateLimit({
 
 app.use("/api/auth", authLimiter, authRoutes)
 app.use("/api/inscriptions", inscriptionRoutes)
+app.use("/api/tools", toolRoutes)
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() })

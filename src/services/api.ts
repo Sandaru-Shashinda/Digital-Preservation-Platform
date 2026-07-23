@@ -72,6 +72,24 @@ export interface UploadResult {
   message: string;
 }
 
+export interface ImageTranslateResult {
+  imageUrl: string;
+  imageProcessedUrl: string;
+  text: string;
+  confidence: number;
+  translation: string;
+  translationError: string;
+}
+
+// Extracts the human-readable message the API returns in `{ message }`,
+// falling back to the axios/network error text.
+export const getApiErrorMessage = (err: unknown, fallback = 'Something went wrong'): string => {
+  if (axios.isAxiosError(err)) {
+    return err.response?.data?.message ?? err.message ?? fallback;
+  }
+  return err instanceof Error ? err.message : fallback;
+};
+
 // ---- API Calls ----
 export const fetchInscriptions = async (params: FilterParams = {}): Promise<PaginatedResponse> => {
   const { data } = await api.get<PaginatedResponse>('/inscriptions', { params });
@@ -119,6 +137,21 @@ export const runOcr = async (id: string): Promise<OcrResult> => {
 
 export const translateInscription = async (id: string, text?: string): Promise<{ translation: string }> => {
   const { data } = await api.post<{ translation: string }>(`/inscriptions/${id}/translate`, text ? { text } : {});
+  return data;
+};
+
+// Public one-shot pipeline: upload an image and get back OCR text + translation.
+// No auth, no saved inscription required.
+export const translateImageFile = async (
+  file: File,
+  scriptType?: string
+): Promise<ImageTranslateResult> => {
+  const formData = new FormData();
+  formData.append('image', file);
+  if (scriptType) formData.append('scriptType', scriptType);
+  const { data } = await api.post<ImageTranslateResult>('/tools/translate-image', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return data;
 };
 

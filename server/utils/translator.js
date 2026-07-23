@@ -19,7 +19,9 @@ export async function translateText(ancientText, scriptType = '') {
   }
 
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  // 'gemini-flash-latest' is an alias that tracks Google's current flash model,
+  // so this won't break when a specific version is retired.
+  const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
 
   const scriptContext = scriptType ? ` written in ${scriptType} script` : '';
   const prompt = `${SYSTEM_PROMPT}

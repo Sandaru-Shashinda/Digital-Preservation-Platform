@@ -13,8 +13,6 @@ const OTHER_LINKS = [
   { label: 'Introduction to Inscription', to: '/#about' },
   { label: 'Find Inscriptions', to: '/inscriptions' },
   { label: 'Translate', to: '/inscriptions' },
-  { label: 'About Us', to: '#' },
-  { label: 'Our Services', to: '#' },
 ];
 
 const MEDIA_LINKS = [

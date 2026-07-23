@@ -5,6 +5,7 @@ import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage from './pages/LandingPage';
 import ArchiveView from './pages/ArchiveView';
+import TranslatePage from './pages/TranslatePage';
 import DetailView from './pages/DetailView';
 import MapView from './pages/MapView';
 import AdminDashboard from './pages/AdminDashboard';
@@ -20,6 +21,7 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/inscriptions" element={<ArchiveView />} />
+            <Route path="/translate" element={<TranslatePage />} />
             <Route path="/inscription/:id" element={<DetailView />} />
             <Route path="/map" element={<MapView />} />
             <Route path="/admin/login" element={<AdminLogin />} />
